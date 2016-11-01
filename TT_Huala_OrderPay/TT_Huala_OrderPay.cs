@@ -568,7 +568,7 @@ namespace TT_Huala_OrderPay
 
         void myTs_OnPutOutData(object sender, string outMes)
         {
-            //PutRunInfo(outMes);
+            //PutRunInfo(outMes); 
             List<string[]> mySnList;
             if(XylTool.GetScanPayOrderList(outMes, out mySnList))
             {
