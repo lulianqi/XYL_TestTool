@@ -83,8 +83,9 @@ namespace TT_Huala_OrderPay.MyTool
                     return false;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                MyCommonTool.ErrorLog.PutInLog("ID:0056 " + ex.Message + "\r\n" + yourSouce);
                 return false;
             }
         }
