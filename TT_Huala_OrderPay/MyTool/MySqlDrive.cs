@@ -152,11 +152,13 @@ namespace TT_Huala_OrderPay.MyTool
         
         #region delegate and event
         public delegate void delegateGetErrorMessageEventHandler(object sender, string ErrorMessage);
+        public delegate void delegateGetInfoMessageEventHandler(object sender, string InfoMessage);
         public delegate void delegateDriveStateChangeEventHandler(object sender, bool isCounect);
 
         public delegate void delegateGetAliveTaskDataTableInfoEventHandler(object sender, DataTable dataTable);
 
         public event delegateGetErrorMessageEventHandler OnGetErrorMessage;
+        public event delegateGetInfoMessageEventHandler OnGetInfoMessage;
         public event delegateDriveStateChangeEventHandler OnDriveStateChange;
         #endregion
 
@@ -172,6 +174,8 @@ namespace TT_Huala_OrderPay.MyTool
         private MySqlTransaction myTransaction;
         private DataTable myTable;
         private string nowError;
+        private int defaultReconnectTime;
+        private int reconnectTime;
         #endregion
 
         #region attribute
@@ -217,6 +221,16 @@ namespace TT_Huala_OrderPay.MyTool
         {
             get { return nowError; }
         }
+
+        /// <summary>
+        /// get or set the times of reconnect to mysql
+        /// </summary>
+        public int ReconnectTime
+        {
+            get { return defaultReconnectTime; }
+            set { defaultReconnectTime = reconnectTime = value; }
+        }
+
         #endregion
 
         #region function
@@ -228,6 +242,7 @@ namespace TT_Huala_OrderPay.MyTool
         {
             data_source = connStr;
             isDriveConnect = false;
+            defaultReconnectTime = reconnectTime = 1;
             myAutoResetEvent.Set();
         }
 
@@ -241,6 +256,18 @@ namespace TT_Huala_OrderPay.MyTool
             if (OnGetErrorMessage != null)
             {
                 OnGetErrorMessage(this, errorMes);
+            }
+        }
+
+        /// <summary>
+        /// set info message your should use it deal your error that you want tell the user
+        /// </summary>
+        /// <param name="errorMes">error message</param>
+        private void SetInfoMes(string infoMes)
+        {
+            if (OnGetInfoMessage != null)
+            {
+                OnGetInfoMessage(this, infoMes);
             }
         }
 
@@ -274,9 +301,28 @@ namespace TT_Huala_OrderPay.MyTool
                 }
                 if (myConnection.State == ConnectionState.Closed || myConnection.State == ConnectionState.Broken)
                 {
-                    myConnection.Open();
+                    try
+                    {
+                        myConnection.Open();
+                    }
+                    catch
+                    {
+                        if (reconnectTime > 0)
+                        {
+                            SetInfoMes("Reconnect to the database");
+                            reconnectTime--;
+                            myConnection.Dispose();
+                            myConnection = new MySqlConnection(data_source);
+                            return ConnectDataBase();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
                 UpdataDriveConnectState(true);
+                reconnectTime = defaultReconnectTime;
                 return true;
             }
             catch(MySql.Data.MySqlClient.MySqlException ex)
