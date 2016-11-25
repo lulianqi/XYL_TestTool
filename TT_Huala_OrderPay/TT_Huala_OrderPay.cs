@@ -211,6 +211,11 @@ namespace TT_Huala_OrderPay
 
         public void PutRunInfo(string infoMes)
         {
+            PutRunInfo(infoMes, true);   
+        }
+
+        public void PutRunInfo(string infoMes ,bool isNewLine)
+        {
 
             if (this.InvokeRequired)
             {
@@ -218,7 +223,7 @@ namespace TT_Huala_OrderPay
             }
             else
             {
-                dataRecordBox_MesInfo.AddDate(infoMes, Color.Black, true);
+                dataRecordBox_MesInfo.AddDate(infoMes, Color.Black, isNewLine);
             }
         }
 
@@ -553,8 +558,22 @@ namespace TT_Huala_OrderPay
             }
         }
 
+        MySvn mySvn = new MySvn();
         private void bt_test_Click(object sender, EventArgs e)
         {
+            if(mySvn.OnGetSnvMessage==null)
+            {
+                mySvn.OnGetSnvMessage += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes,false); });
+            }
+            if (mySvn.OnGetSnvStateInfo == null)
+            {
+                mySvn.OnGetSnvStateInfo += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes, false); });
+            }
+            
+            //mySvn.UpdataOldPath(@"https://192.168.200.30:18080/svn/P1003/branches/html/huala-sys", @"D:\node\huala-sys");
+            mySvn.CheckOut();
+            //mySvn.UpdataPath( @"D:\node\huala-sys");
+            return;
             MyAliveTask.MyHttpTask myTs = new MyAliveTask.MyHttpTask("New", "http://wxtest.huala.com:8081/huala/scan_order_list", 1000);
             myTs.OnPutOutData += myTs_OnPutOutData;
             myTs.StartTask();

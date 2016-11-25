@@ -69,7 +69,6 @@ namespace TT_Huala_OrderPay
             this.bt_test.TabIndex = 1;
             this.bt_test.Text = "Test";
             this.bt_test.UseVisualStyleBackColor = true;
-            this.bt_test.Visible = false;
             this.bt_test.Click += new System.EventHandler(this.bt_test_Click);
             // 
             // cb_AutoPay

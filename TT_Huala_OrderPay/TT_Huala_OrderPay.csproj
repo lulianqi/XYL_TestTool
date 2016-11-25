@@ -44,6 +44,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="SharpSvn">
+      <HintPath>F:\file\Code\SharpSSH-1.1.1.13.src\SharpSSH-1.1.1.13.src\SshTest\bin\Debug\SharpSvn.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -61,6 +64,7 @@
     <Compile Include="MyTool\MyGlobalData.cs" />
     <Compile Include="MyTool\MyRendezvousTask.cs" />
     <Compile Include="MyTool\MySqlDrive.cs" />
+    <Compile Include="MyTool\MySvn.cs" />
     <Compile Include="MyTool\XylTool.cs" />
     <Compile Include="TT_Huala_OrderPay.cs">
       <SubType>Form</SubType>
