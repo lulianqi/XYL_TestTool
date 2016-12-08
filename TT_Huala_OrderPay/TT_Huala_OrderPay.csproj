@@ -57,6 +57,10 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="Tamir.SharpSSH, Version=1.1.1.13, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Tamir.SharpSSH.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MyHualaBusiness\hualaBuyerBusiness.cs" />
@@ -65,6 +69,7 @@
     <Compile Include="MyTool\MyRendezvousTask.cs" />
     <Compile Include="MyTool\MySqlDrive.cs" />
     <Compile Include="MyTool\MySvn.cs" />
+    <Compile Include="MyTool\MyWindowsCmd.cs" />
     <Compile Include="MyTool\XylTool.cs" />
     <Compile Include="TT_Huala_OrderPay.cs">
       <SubType>Form</SubType>

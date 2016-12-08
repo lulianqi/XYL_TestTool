@@ -59,6 +59,7 @@ namespace TT_Huala_OrderPay
             this.bt_scanOrder = new System.Windows.Forms.Button();
             this.ck_antoSacnPay = new System.Windows.Forms.CheckBox();
             this.tb_scanUserId = new System.Windows.Forms.TextBox();
+            this.bt_update_hualaSys = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // bt_test
@@ -300,11 +301,22 @@ namespace TT_Huala_OrderPay
             this.tb_scanUserId.TabIndex = 19;
             this.tb_scanUserId.Text = "0";
             // 
+            // bt_update_hualaSys
+            // 
+            this.bt_update_hualaSys.Location = new System.Drawing.Point(6, 307);
+            this.bt_update_hualaSys.Name = "bt_update_hualaSys";
+            this.bt_update_hualaSys.Size = new System.Drawing.Size(75, 23);
+            this.bt_update_hualaSys.TabIndex = 20;
+            this.bt_update_hualaSys.Text = "Update Sys";
+            this.bt_update_hualaSys.UseVisualStyleBackColor = true;
+            this.bt_update_hualaSys.Click += new System.EventHandler(this.bt_update_hualaSys_Click);
+            // 
             // TT_Huala_OrderPay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(915, 510);
+            this.Controls.Add(this.bt_update_hualaSys);
             this.Controls.Add(this.tb_scanUserId);
             this.Controls.Add(this.ck_antoSacnPay);
             this.Controls.Add(this.bt_scanOrder);
@@ -367,6 +379,7 @@ namespace TT_Huala_OrderPay
         private System.Windows.Forms.Button bt_scanOrder;
         private System.Windows.Forms.CheckBox ck_antoSacnPay;
         private System.Windows.Forms.TextBox tb_scanUserId;
+        private System.Windows.Forms.Button bt_update_hualaSys;
     }
 }
 

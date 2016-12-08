@@ -80,6 +80,7 @@ namespace TT_Huala_OrderPay.MyTool
                 }
                 else
                 {
+                    MyCommonTool.ErrorLog.PutInLog("ID:0083 " + yourSouce);
                     return false;
                 }
             }

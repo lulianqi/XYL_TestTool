@@ -816,6 +816,28 @@ namespace MyCommonTool
                 Directory.CreateDirectory(yourPath);
             }
         }
+
+        /// <summary>
+        /// get all file in your path
+        /// </summary>
+        /// <param name="yourPath">your path</param>
+        /// <returns>all file in path</returns>
+        public static FileInfo[] GetAllFiles(string yourPath)
+        {
+
+            if (!Directory.Exists(yourPath))
+            {
+                return null;
+            }
+            DirectoryInfo theFolder = new DirectoryInfo(yourPath);
+            return theFolder.GetFiles("*", SearchOption.AllDirectories);
+        }
+
+        public static void GetMyFiles(DirectoryInfo yourDirectory, out DirectoryInfo[] outDirectoryInfos, out FileInfo[] outFileInfos)
+        {
+            outDirectoryInfos = yourDirectory.GetDirectories();
+            outFileInfos = yourDirectory.GetFiles();
+        }
     }
 
     /// <summary>

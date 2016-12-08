@@ -81,7 +81,7 @@ namespace TT_Huala_OrderPay.MyTool
         {
             if (OnGetSnvMessage != null)
             {
-                this.OnGetSnvStateInfo(null, mes);
+                this.OnGetSnvStateInfo(null, mes+"\r\n");
             }
         }
 
