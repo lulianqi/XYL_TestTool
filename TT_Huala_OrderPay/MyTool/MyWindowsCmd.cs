@@ -19,6 +19,13 @@ namespace TT_Huala_OrderPay.MyTool
         private bool isDropAscStyle;
         private bool willKill;
 
+        /// <summary>
+        /// 异步读取指定IO流并即时返回直到该流结束（初始化完成后即开始读取）
+        /// </summary>
+        /// <param name="yourBaseStream">目标IO流</param>
+        /// <param name="yourEncode">编码方式</param>
+        /// <param name="dropAscStyle">是否丢弃ASC样式</param>
+        /// <param name="yourGetAsynReadData">数据返回委托</param>
         public StreamAsynRead(Stream yourBaseStream, Encoding yourEncode, bool dropAscStyle , delegateGetStreamAsynReadEventHandler yourGetAsynReadData)
         {
             if (yourBaseStream == null)
@@ -133,6 +140,9 @@ namespace TT_Huala_OrderPay.MyTool
         }
 
         public delegate void delegateGetCmdMessageEventHandler(object sender, string InfoMessage, RedirectOutputType redirectOutputType);
+        /// <summary>
+        /// 订阅CMD返回数据
+        /// </summary>
         public event delegateGetCmdMessageEventHandler OnGetCmdMessage;
 
         private System.Diagnostics.Process p = new System.Diagnostics.Process();
@@ -156,6 +166,10 @@ namespace TT_Huala_OrderPay.MyTool
             p.StartInfo.ErrorDialog = true;
         }
 
+        /// <summary>
+        /// 含名称字段的构造函数
+        /// </summary>
+        /// <param name="yourNmae">CMD名称（方便区分多份CMD实例）</param>
         public MyWindowsCmd(string yourNmae):this()
         {
             cmdName = yourNmae;
@@ -169,28 +183,43 @@ namespace TT_Huala_OrderPay.MyTool
             }
         }
 
-
+        /// <summary>
+        /// 获取CMD名称
+        /// </summary>
         public string CmdName
         {
             get { return cmdName; }
         }
 
+        /// <summary>
+        /// 获取最近的错误
+        /// </summary>
         public string ErrorMes
         {
             get { return errorMes; }
         }
 
+        /// <summary>
+        /// 获取一个值，盖值指示该CMD是否启动
+        /// </summary>
         public bool IsStart
         {
             get { return isStart; }
         }
 
+        /// <summary>
+        /// 获取或设置获取内容回调时是否丢弃ASK颜色等样式方案（如果您的应用不具备处理这种样式的功能，请选择放弃该样式）
+        /// </summary>
         public bool IsDropAscStyle
         {
             get { return isDropAscStyle; }
             set { isDropAscStyle = value; }
         }
 
+        /// <summary>
+        /// 启动CMD
+        /// </summary>
+        /// <returns>是否成功启动</returns>
         public bool StartCmd()
         {
             if(isStart)
@@ -222,6 +251,11 @@ namespace TT_Huala_OrderPay.MyTool
             }
         }
 
+        /// <summary>
+        /// 执行CMD命令
+        /// </summary>
+        /// <param name="yourCmd">cmd命令内容</param>
+        /// <returns>是否成功</returns>
         public bool RunCmd(string yourCmd)
         {
             if(yourCmd==null || !isStart)
@@ -240,6 +274,9 @@ namespace TT_Huala_OrderPay.MyTool
             }
         }
 
+        /// <summary>
+        /// 等待执行完成（同步方法，请勿在主线程中调用）
+        /// </summary>
         public void WaitForExit()
         {
             if (RunCmd("exit"))
@@ -248,7 +285,9 @@ namespace TT_Huala_OrderPay.MyTool
             }
         }
 
-
+        /// <summary>
+        /// 停止该CMD，如果不准备再次启动，请直接调用Dispose
+        /// </summary>
         public void StopCmd()
         {
             if(isStart)
@@ -257,7 +296,6 @@ namespace TT_Huala_OrderPay.MyTool
                 isStart = false;
             }
         }
-
 
         public void Dispose()
         {

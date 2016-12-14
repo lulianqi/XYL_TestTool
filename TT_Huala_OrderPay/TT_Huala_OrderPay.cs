@@ -19,6 +19,7 @@ namespace TT_Huala_OrderPay
 {
     public partial class TT_Huala_OrderPay : Form
     {
+
         public TT_Huala_OrderPay()
         {
             InitializeComponent();
@@ -30,13 +31,14 @@ namespace TT_Huala_OrderPay
             mySqlDrive.ConnectDataBase();
         }
 
+        private bool isDeBug = true;
 
         #region field
         MySqlDrive mySqlDrive;
         MyAliveTask.MyHttpTask myTs;
         HualaBuyerBusiness myHualaBuyerBusiness;
         string mySqlConnStr = "data source=192.168.200.152;user id=root;pwd=xpsh;initial catalog=huala_test;allow zero datetime=true ;pooling=false; charset=utf8";
-        string defaultUrl = "wxtest.huala.com:8081"; //"wxtest.huala.com";
+        string defaultUrl = "wxtest.huala.com:80"; //"wxtest.huala.com";
 
         static class TaskVaules
         {
@@ -213,7 +215,8 @@ namespace TT_Huala_OrderPay
 
         public void PutRunInfo(string infoMes)
         {
-            PutRunInfo(infoMes,Color.Black, true);   
+            PutRunInfo(infoMes,Color.Black, true);
+            Console.WriteLine(infoMes);
         }
 
         public void PutRunInfo(string infoMes ,Color yourColor, bool isNewLine)
@@ -562,14 +565,29 @@ namespace TT_Huala_OrderPay
             }
         }
 
-        MySvn mySvn = new MySvn();
-        MyWindowsCmd cmd = new MyWindowsCmd();
+        #region 自动打包更新
 
-        private string svnLocalPath = @"D:\node\huala-sys";
-        private string svnRemotePath = @"https://192.168.200.30:18080/svn/P1003/branches/html/huala-sys";
-        private List<string> bliudCmds = new List<string> { @"D:", @"cd D:/node/huala-sys/", @"npm run test" };
-        private string dstPath = @"D:\node\huala-sys\dist";
-        private string severPath = @"/data/admin";
+        MySvn mySvn = new MySvn();
+        MyWindowsCmd cmdSys = new MyWindowsCmd();
+        MyWindowsCmd cmdHuala = new MyWindowsCmd();
+
+        SshExec exec = new SshExec("192.168.200.153", "root", "B2CCentOs7!");
+        SshShell shell = new SshShell("192.168.200.153", "root", "B2CCentOs7!");
+        SshTransferProtocolBase sshCp = new Scp("192.168.200.153", "root", "B2CCentOs7!");
+        bool isSshInUsed = false;
+        Object thisSshLock = new Object();
+
+        private string svnLocalSysPath = @"D:\node\huala-sys";
+        private string svnRemoteSysPath = @"https://192.168.200.30:18080/svn/P1003/branches/html/huala-sys";
+        private List<string> bliudSysCmds = new List<string> { @"D:", @"cd D:/node/huala-sys/", @"npm run test" };
+        private string dstSysPath = @"D:\node\huala-sys\dist";
+        private string severSysPath = @"/data/admin";
+
+        private string svnLocalWxPath = @"D:\node\scan-vue";
+        private string svnRemoteWxPath = @"https://192.168.200.30:18080/svn/P1003/branches/html/scan-vue";
+        private List<string> bliudWxCmds = new List<string> { @"D:", @"cd D:/node/scan-vue/", @"npm run test" };
+        private string dstWxPath = @"D:\node\scan-vue\test";
+        private string severWxPath = @"/data/huala";
         private void bt_update_hualaSys_Click(object sender, EventArgs e)
         {
             PutRunInfo("SVN 开始更新", Color.Green, true);
@@ -579,40 +597,75 @@ namespace TT_Huala_OrderPay
             }
             if (mySvn.OnGetSnvStateInfo == null)
             {
-                mySvn.OnGetSnvStateInfo += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes,Color.Green, false); });
+                mySvn.OnGetSnvStateInfo += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes, Color.Green, false); });
             }
-            mySvn.Updata(svnLocalPath);
+            mySvn.Updata(svnLocalSysPath);
             //mySvn.CheckOut(@"https://192.168.200.30:18080/svn/P1003/branches",@"D:\node\test");
 
             PutRunInfo("\r\n开始打包", Color.Green, true);
-            if (!cmd.IsStart)
+            bool innerIsOk = false;
+            if (!cmdSys.IsStart)
+            {
+                cmdSys.OnGetCmdMessage += new MyWindowsCmd.delegateGetCmdMessageEventHandler((obj, str, outType) =>
+                {
+                    //Console.WriteLine(innerIsOk ? "T" : "F");
+                    System.Diagnostics.Debug.WriteLine(innerIsOk ? "***********************T" : "********************************F");
+                    PutRunInfo(str, outType == MyWindowsCmd.RedirectOutputType.RedirectStandardError ? Color.DarkGray : Color.Black, false);
+                    if (innerIsOk)
+                    { if (str.Contains(svnLocalSysPath)) { innerIsOk = false; MoveHualaSysToServer(); } }
+                    else
+                    { if (str.Contains("+ 1 hidden modules")) { innerIsOk = true; if (str.Contains(svnLocalSysPath)) { innerIsOk = false; MoveHualaSysToServer(); } } }
+                });
+                cmdSys.StartCmd();
+            }
+            foreach (string tempCmd in bliudSysCmds)
+            {
+                cmdSys.RunCmd(tempCmd);
+            }
+        }
+
+        private void bt_update_hualaWx_Click(object sender, EventArgs e)
+        {
+            PutRunInfo("SVN 开始更新", Color.Green, true);
+            if (mySvn.OnGetSnvMessage == null)
+            {
+                mySvn.OnGetSnvMessage += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes, Color.Black, false); });
+            }
+            if (mySvn.OnGetSnvStateInfo == null)
+            {
+                mySvn.OnGetSnvStateInfo += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes, Color.Green, false); });
+            }
+            mySvn.Updata(svnLocalWxPath);
+
+            PutRunInfo("\r\n开始打包", Color.Green, true);
+            if (!cmdHuala.IsStart)
             {
                 bool innerIsOk = false;
-                cmd.OnGetCmdMessage += new MyWindowsCmd.delegateGetCmdMessageEventHandler((obj, str, outType) => {
-                    PutRunInfo(str, Color.Black, false); 
+                cmdHuala.OnGetCmdMessage += new MyWindowsCmd.delegateGetCmdMessageEventHandler((obj, str, outType) =>
+                {
+                    PutRunInfo(str, outType == MyWindowsCmd.RedirectOutputType.RedirectStandardError ? Color.DarkGray : Color.Black, false);
                     if (innerIsOk)
-                    { if (str.Contains(svnLocalPath)) { MoveHualaSysToServer(); } } 
+                    { if (str.Contains(svnLocalWxPath)) { innerIsOk = false; MoveHualaWxToServer(); } }
                     else
-                    { if (str.Contains("+ 1 hidden modules")) { innerIsOk = true; } }
+                    { if (str.Contains("Version: webpack")) { innerIsOk = true; if (str.Contains(svnLocalWxPath)) { innerIsOk = false; MoveHualaWxToServer(); } } }
                 });
-                cmd.StartCmd();
+                cmdHuala.StartCmd();
             }
-            foreach(string tempCmd in bliudCmds)
+            foreach (string tempCmd in bliudWxCmds)
             {
-                cmd.RunCmd(tempCmd);
+                cmdHuala.RunCmd(tempCmd);
             }
         }
 
 
-        SshExec exec = new SshExec("192.168.200.153", "root", "B2CCentOs7!");
-        SshShell shell = new SshShell("192.168.200.153", "root", "B2CCentOs7!");
-        SshTransferProtocolBase sshCp = new Scp("192.168.200.153", "root", "B2CCentOs7!");
-        
+
         private void MoveHualaSysToServer()
         {
-            PutRunInfo("开始备份", Color.Green, true);
-            sshCp.Connect();
-            //System.Threading.Thread.Sleep(500);
+            lock (thisSshLock)
+            {
+                PutRunInfo("开始备份", Color.Green, true);
+                sshCp.Connect();
+                //System.Threading.Thread.Sleep(500);
 
 #if false
             exec.Connect();
@@ -625,55 +678,132 @@ namespace TT_Huala_OrderPay
             exec.Close();
 #endif
 
-            shell.Connect();
-            shell.ExpectPattern = "#";
-            PutRunInfo(shell.Expect());
-            shell.WriteLine(@"cd /data/admin_bak/");
-            PutRunInfo(shell.Expect());
-            shell.WriteLine(@"ls -l");
-            PutRunInfo(shell.Expect());
-            shell.WriteLine(@"rm -rf *");
-            PutRunInfo(shell.Expect());
-            shell.WriteLine(@"cd /data/admin/");
-            PutRunInfo(shell.Expect());
-            shell.WriteLine(@"ls -l");
-            PutRunInfo(shell.Expect());
-            shell.WriteLine(@"mv -rf /data/admin_bak/");
-            PutRunInfo(shell.Expect());
+                shell.Connect();
+                shell.ExpectPattern = "#";
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"cd /data/admin_bak/");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"ls");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"rm -rf *");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"cd /data/admin/");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"ls");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"mv -f * /data/admin_bak");
+                PutRunInfo(shell.Expect());
 
-            FileInfo[] distFIles = FileService.GetAllFiles(dstPath);
-            if (distFIles==null)
-            {
-                PutRunInfo("没有发现更新文件", Color.Red, true);
-                exec.Close();
+                FileInfo[] distFIles = FileService.GetAllFiles(dstSysPath);
+                if (distFIles == null)
+                {
+                    PutRunInfo("没有发现更新文件", Color.Red, true);
+                    exec.Close();
+                    sshCp.Close();
+                }
+                PutRunInfo("开始更新", Color.Green, true);
+                foreach (FileInfo tempFileInfo in distFIles)
+                {
+                    sshCp.Put(tempFileInfo.DirectoryName + @"\" + tempFileInfo.Name, severSysPath + @"/" + tempFileInfo.Name);
+                }
+                shell.WriteLine(@"ls -l");
+                PutRunInfo(shell.Expect());
+                PutRunInfo("更新完成", Color.Green, true);
+                shell.Close();
                 sshCp.Close();
             }
-            PutRunInfo("开始更新", Color.Green, true);
-            foreach (FileInfo tempFileInfo in distFIles)
-            {
-                sshCp.Put(tempFileInfo.DirectoryName + @"\" + tempFileInfo.Name, severPath + @"/" + tempFileInfo.Name);
-            }
-            shell.WriteLine(@"ls -l");
-            PutRunInfo(shell.Expect());
-            PutRunInfo("更新完成", Color.Green, true);
-            shell.Close();
-            
-            sshCp.Close();
         }
-      
+
+        private void MoveHualaWxToServer()
+        {
+            lock (thisSshLock)
+            {
+                PutRunInfo("开始备份", Color.Green, true);
+                sshCp.Connect();
+
+                shell.Connect();
+                shell.ExpectPattern = "#";
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"cd /data/wx_bak/");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"ls");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"rm -rf *");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"cd /data/huala/");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"ls");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"mv -f * /data/wx_bak");
+                PutRunInfo(shell.Expect());
+
+                FileInfo[] distFIles = FileService.GetAllFiles(dstWxPath);
+                if (distFIles == null)
+                {
+                    PutRunInfo("没有发现更新文件", Color.Red, true);
+                    exec.Close();
+                    sshCp.Close();
+                }
+                PutRunInfo("开始更新", Color.Green, true);
+                foreach (FileInfo tempFileInfo in distFIles)
+                {
+                    string tempNowPath = severWxPath + tempFileInfo.DirectoryName.myTrimStr(@"D:\node\scan-vue\test", null).Replace(@"\", @"/") + @"/" + tempFileInfo.Name;
+                    try
+                    {
+                        sshCp.Put(tempFileInfo.DirectoryName + @"\" + tempFileInfo.Name, tempNowPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        PutRunInfo(ex.Message, Color.OrangeRed, true);
+                        //scp: /tmp/dist/123: No such file or directory
+                        if (ex.Message.Contains("No such file or directory"))
+                        {
+                            string tempPath = ex.Message;
+                            tempPath = tempPath.Remove(0, tempPath.IndexOf(@"/"));
+                            tempPath = tempPath.Remove(tempPath.LastIndexOf(@"/"));
+                            PutRunInfo("创建文件夹" + tempPath, Color.OrangeRed, true);
+                            if (MySsh.SshFileMkFullDir(sshCp, tempPath))
+                            {
+                                try
+                                {
+                                    sshCp.Put(tempFileInfo.DirectoryName + @"\" + tempFileInfo.Name, tempNowPath);
+                                }
+                                catch (Exception innerEx)
+                                {
+                                    PutRunInfo(innerEx.Message, Color.Red, true);
+                                    PutRunInfo("传输失败，跳过该文件", Color.Red, true);
+                                }
+                            }
+                            else
+                            {
+                                PutRunInfo("创建文件夹失败，跳过该文件", Color.Red, true);
+                            }
+                        }
+                    }
+                }
+                shell.WriteLine(@"ls -l");
+                PutRunInfo(shell.Expect());
+                PutRunInfo("更新完成", Color.Green, true);
+                shell.Close();
+                sshCp.Close();
+            }
+        }
+
+        #endregion
+
         private void bt_test_Click(object sender, EventArgs e)
         {
-            if (!cmd.IsStart)
+            if (!cmdSys.IsStart)
             {
-                cmd.OnGetCmdMessage += new MyWindowsCmd.delegateGetCmdMessageEventHandler((obj, str, outType) => { PutRunInfo(str,Color.Black, false); });
-                cmd.StartCmd();
+                cmdSys.OnGetCmdMessage += new MyWindowsCmd.delegateGetCmdMessageEventHandler((obj, str, outType) => { PutRunInfo(str,Color.Black, false); });
+                cmdSys.StartCmd();
             }
-            cmd.RunCmd(@"D:");
-            cmd.RunCmd(@"cd D:/node/huala-sys/");
-            cmd.RunCmd(@"npm run test");
-            cmd.RunCmd(@"ipconfig");
-            //cmd.StopCmd();
+            cmdSys.RunCmd(@"D:");
+            cmdSys.RunCmd(@"cd D:/node/huala-sys/");
+            cmdSys.RunCmd(@"npm run test");
+            cmdSys.RunCmd(@"ipconfig");
 
+            //cmd.StopCmd();
             //if(mySvn.OnGetSnvMessage==null)
             //{
             //    mySvn.OnGetSnvMessage += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes,false); });
@@ -682,12 +812,12 @@ namespace TT_Huala_OrderPay
             //{
             //    mySvn.OnGetSnvStateInfo += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes, false); });
             //}
-            
             //mySvn.UpdataOldPath(@"https://192.168.200.30:18080/svn/P1003/branches/html/huala-sys", @"D:\node\huala-sys");
             //mySvn.CheckOut();
             //mySvn.UpdataPath( @"D:\node\huala-sys");
+
             return;
-            MyAliveTask.MyHttpTask myTs = new MyAliveTask.MyHttpTask("New", "http://wxtest.huala.com:8081/huala/scan_order_list", 1000);
+            MyAliveTask.MyHttpTask myTs = new MyAliveTask.MyHttpTask("New", "http://wxtest.huala.com:80/huala/scan_order_list", 1000);
             myTs.OnPutOutData += myTs_OnPutOutData;
             myTs.StartTask();
         }
@@ -785,6 +915,7 @@ namespace TT_Huala_OrderPay
             lv_orderSnList.Width = this.Width - 211;
             lv_orderSnList.Height = this.Height - 358;
         }
+
 
 
 

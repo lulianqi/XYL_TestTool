@@ -44,6 +44,11 @@ namespace TT_Huala_OrderPay
             this.tb_buyer_pwd = new System.Windows.Forms.TextBox();
             this.tb_buyer_name = new System.Windows.Forms.TextBox();
             this.cb_SellerAffirm = new System.Windows.Forms.CheckBox();
+            this.ck_antoRefush = new System.Windows.Forms.CheckBox();
+            this.bt_scanOrder = new System.Windows.Forms.Button();
+            this.ck_antoSacnPay = new System.Windows.Forms.CheckBox();
+            this.tb_scanUserId = new System.Windows.Forms.TextBox();
+            this.bt_update_hualaSys = new System.Windows.Forms.Button();
             this.lv_orderSnList = new MyCommonControl.ListViewWithButton();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -55,11 +60,7 @@ namespace TT_Huala_OrderPay
             this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.dataRecordBox_MesInfo = new MyCommonControl.DataRecordBox();
-            this.ck_antoRefush = new System.Windows.Forms.CheckBox();
-            this.bt_scanOrder = new System.Windows.Forms.Button();
-            this.ck_antoSacnPay = new System.Windows.Forms.CheckBox();
-            this.tb_scanUserId = new System.Windows.Forms.TextBox();
-            this.bt_update_hualaSys = new System.Windows.Forms.Button();
+            this.bt_update_hualaWx = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // bt_test
@@ -186,6 +187,55 @@ namespace TT_Huala_OrderPay
             this.cb_SellerAffirm.Text = "SellerSure";
             this.cb_SellerAffirm.UseVisualStyleBackColor = true;
             // 
+            // ck_antoRefush
+            // 
+            this.ck_antoRefush.AutoSize = true;
+            this.ck_antoRefush.Location = new System.Drawing.Point(273, 298);
+            this.ck_antoRefush.Name = "ck_antoRefush";
+            this.ck_antoRefush.Size = new System.Drawing.Size(72, 16);
+            this.ck_antoRefush.TabIndex = 16;
+            this.ck_antoRefush.Text = "自动刷新";
+            this.ck_antoRefush.UseVisualStyleBackColor = true;
+            this.ck_antoRefush.CheckedChanged += new System.EventHandler(this.ck_antoRefush_CheckedChanged);
+            // 
+            // bt_scanOrder
+            // 
+            this.bt_scanOrder.Location = new System.Drawing.Point(192, 294);
+            this.bt_scanOrder.Name = "bt_scanOrder";
+            this.bt_scanOrder.Size = new System.Drawing.Size(75, 23);
+            this.bt_scanOrder.TabIndex = 17;
+            this.bt_scanOrder.Text = "刷新";
+            this.bt_scanOrder.UseVisualStyleBackColor = true;
+            this.bt_scanOrder.Click += new System.EventHandler(this.bt_scanOrder_Click);
+            // 
+            // ck_antoSacnPay
+            // 
+            this.ck_antoSacnPay.AutoSize = true;
+            this.ck_antoSacnPay.Location = new System.Drawing.Point(444, 298);
+            this.ck_antoSacnPay.Name = "ck_antoSacnPay";
+            this.ck_antoSacnPay.Size = new System.Drawing.Size(72, 16);
+            this.ck_antoSacnPay.TabIndex = 18;
+            this.ck_antoSacnPay.Text = "自动支付";
+            this.ck_antoSacnPay.UseVisualStyleBackColor = true;
+            // 
+            // tb_scanUserId
+            // 
+            this.tb_scanUserId.Location = new System.Drawing.Point(382, 295);
+            this.tb_scanUserId.Name = "tb_scanUserId";
+            this.tb_scanUserId.Size = new System.Drawing.Size(53, 21);
+            this.tb_scanUserId.TabIndex = 19;
+            this.tb_scanUserId.Text = "0";
+            // 
+            // bt_update_hualaSys
+            // 
+            this.bt_update_hualaSys.Location = new System.Drawing.Point(6, 307);
+            this.bt_update_hualaSys.Name = "bt_update_hualaSys";
+            this.bt_update_hualaSys.Size = new System.Drawing.Size(75, 23);
+            this.bt_update_hualaSys.TabIndex = 20;
+            this.bt_update_hualaSys.Text = "Update Sys";
+            this.bt_update_hualaSys.UseVisualStyleBackColor = true;
+            this.bt_update_hualaSys.Click += new System.EventHandler(this.bt_update_hualaSys_Click);
+            // 
             // lv_orderSnList
             // 
             this.lv_orderSnList.ButtonIndex = 8;
@@ -262,60 +312,22 @@ namespace TT_Huala_OrderPay
             this.dataRecordBox_MesInfo.Size = new System.Drawing.Size(720, 291);
             this.dataRecordBox_MesInfo.TabIndex = 0;
             // 
-            // ck_antoRefush
+            // bt_update_hualaWx
             // 
-            this.ck_antoRefush.AutoSize = true;
-            this.ck_antoRefush.Location = new System.Drawing.Point(273, 298);
-            this.ck_antoRefush.Name = "ck_antoRefush";
-            this.ck_antoRefush.Size = new System.Drawing.Size(72, 16);
-            this.ck_antoRefush.TabIndex = 16;
-            this.ck_antoRefush.Text = "自动刷新";
-            this.ck_antoRefush.UseVisualStyleBackColor = true;
-            this.ck_antoRefush.CheckedChanged += new System.EventHandler(this.ck_antoRefush_CheckedChanged);
-            // 
-            // bt_scanOrder
-            // 
-            this.bt_scanOrder.Location = new System.Drawing.Point(192, 294);
-            this.bt_scanOrder.Name = "bt_scanOrder";
-            this.bt_scanOrder.Size = new System.Drawing.Size(75, 23);
-            this.bt_scanOrder.TabIndex = 17;
-            this.bt_scanOrder.Text = "刷新";
-            this.bt_scanOrder.UseVisualStyleBackColor = true;
-            this.bt_scanOrder.Click += new System.EventHandler(this.bt_scanOrder_Click);
-            // 
-            // ck_antoSacnPay
-            // 
-            this.ck_antoSacnPay.AutoSize = true;
-            this.ck_antoSacnPay.Location = new System.Drawing.Point(444, 298);
-            this.ck_antoSacnPay.Name = "ck_antoSacnPay";
-            this.ck_antoSacnPay.Size = new System.Drawing.Size(72, 16);
-            this.ck_antoSacnPay.TabIndex = 18;
-            this.ck_antoSacnPay.Text = "自动支付";
-            this.ck_antoSacnPay.UseVisualStyleBackColor = true;
-            // 
-            // tb_scanUserId
-            // 
-            this.tb_scanUserId.Location = new System.Drawing.Point(382, 295);
-            this.tb_scanUserId.Name = "tb_scanUserId";
-            this.tb_scanUserId.Size = new System.Drawing.Size(53, 21);
-            this.tb_scanUserId.TabIndex = 19;
-            this.tb_scanUserId.Text = "0";
-            // 
-            // bt_update_hualaSys
-            // 
-            this.bt_update_hualaSys.Location = new System.Drawing.Point(6, 307);
-            this.bt_update_hualaSys.Name = "bt_update_hualaSys";
-            this.bt_update_hualaSys.Size = new System.Drawing.Size(75, 23);
-            this.bt_update_hualaSys.TabIndex = 20;
-            this.bt_update_hualaSys.Text = "Update Sys";
-            this.bt_update_hualaSys.UseVisualStyleBackColor = true;
-            this.bt_update_hualaSys.Click += new System.EventHandler(this.bt_update_hualaSys_Click);
+            this.bt_update_hualaWx.Location = new System.Drawing.Point(97, 307);
+            this.bt_update_hualaWx.Name = "bt_update_hualaWx";
+            this.bt_update_hualaWx.Size = new System.Drawing.Size(75, 23);
+            this.bt_update_hualaWx.TabIndex = 21;
+            this.bt_update_hualaWx.Text = "Update Wx";
+            this.bt_update_hualaWx.UseVisualStyleBackColor = true;
+            this.bt_update_hualaWx.Click += new System.EventHandler(this.bt_update_hualaWx_Click);
             // 
             // TT_Huala_OrderPay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(915, 510);
+            this.Controls.Add(this.bt_update_hualaWx);
             this.Controls.Add(this.bt_update_hualaSys);
             this.Controls.Add(this.tb_scanUserId);
             this.Controls.Add(this.ck_antoSacnPay);
@@ -380,6 +392,7 @@ namespace TT_Huala_OrderPay
         private System.Windows.Forms.CheckBox ck_antoSacnPay;
         private System.Windows.Forms.TextBox tb_scanUserId;
         private System.Windows.Forms.Button bt_update_hualaSys;
+        private System.Windows.Forms.Button bt_update_hualaWx;
     }
 }
 

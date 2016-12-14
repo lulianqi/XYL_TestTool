@@ -68,6 +68,7 @@
     <Compile Include="MyTool\MyGlobalData.cs" />
     <Compile Include="MyTool\MyRendezvousTask.cs" />
     <Compile Include="MyTool\MySqlDrive.cs" />
+    <Compile Include="MyTool\MySsh.cs" />
     <Compile Include="MyTool\MySvn.cs" />
     <Compile Include="MyTool\MyWindowsCmd.cs" />
     <Compile Include="MyTool\XylTool.cs" />
