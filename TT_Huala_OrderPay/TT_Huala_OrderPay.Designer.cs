@@ -61,6 +61,9 @@ namespace TT_Huala_OrderPay
             this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.dataRecordBox_MesInfo = new MyCommonControl.DataRecordBox();
             this.bt_update_hualaWx = new System.Windows.Forms.Button();
+            this.cb_AutoOpenId = new System.Windows.Forms.CheckBox();
+            this.cb_payType = new System.Windows.Forms.ComboBox();
+            this.cb_AutoScanOpenId = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // bt_test
@@ -322,11 +325,46 @@ namespace TT_Huala_OrderPay
             this.bt_update_hualaWx.UseVisualStyleBackColor = true;
             this.bt_update_hualaWx.Click += new System.EventHandler(this.bt_update_hualaWx_Click);
             // 
+            // cb_AutoOpenId
+            // 
+            this.cb_AutoOpenId.AutoSize = true;
+            this.cb_AutoOpenId.Location = new System.Drawing.Point(74, 41);
+            this.cb_AutoOpenId.Name = "cb_AutoOpenId";
+            this.cb_AutoOpenId.Size = new System.Drawing.Size(84, 16);
+            this.cb_AutoOpenId.TabIndex = 22;
+            this.cb_AutoOpenId.Text = "AutoOpenId";
+            this.cb_AutoOpenId.UseVisualStyleBackColor = true;
+            // 
+            // cb_payType
+            // 
+            this.cb_payType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_payType.FormattingEnabled = true;
+            this.cb_payType.Items.AddRange(new object[] {
+            "wx",
+            "ali"});
+            this.cb_payType.Location = new System.Drawing.Point(522, 294);
+            this.cb_payType.Name = "cb_payType";
+            this.cb_payType.Size = new System.Drawing.Size(112, 20);
+            this.cb_payType.TabIndex = 23;
+            // 
+            // cb_AutoScanOpenId
+            // 
+            this.cb_AutoScanOpenId.AutoSize = true;
+            this.cb_AutoScanOpenId.Location = new System.Drawing.Point(640, 296);
+            this.cb_AutoScanOpenId.Name = "cb_AutoScanOpenId";
+            this.cb_AutoScanOpenId.Size = new System.Drawing.Size(84, 16);
+            this.cb_AutoScanOpenId.TabIndex = 24;
+            this.cb_AutoScanOpenId.Text = "AutoOpenId";
+            this.cb_AutoScanOpenId.UseVisualStyleBackColor = true;
+            // 
             // TT_Huala_OrderPay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(915, 510);
+            this.Controls.Add(this.cb_AutoScanOpenId);
+            this.Controls.Add(this.cb_payType);
+            this.Controls.Add(this.cb_AutoOpenId);
             this.Controls.Add(this.bt_update_hualaWx);
             this.Controls.Add(this.bt_update_hualaSys);
             this.Controls.Add(this.tb_scanUserId);
@@ -393,6 +431,9 @@ namespace TT_Huala_OrderPay
         private System.Windows.Forms.TextBox tb_scanUserId;
         private System.Windows.Forms.Button bt_update_hualaSys;
         private System.Windows.Forms.Button bt_update_hualaWx;
+        private System.Windows.Forms.CheckBox cb_AutoOpenId;
+        private System.Windows.Forms.ComboBox cb_payType;
+        private System.Windows.Forms.CheckBox cb_AutoScanOpenId;
     }
 }
 

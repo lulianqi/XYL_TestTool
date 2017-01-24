@@ -25,6 +25,7 @@ namespace TT_Huala_OrderPay
             InitializeComponent();
             //mySqlDrive = new MySqlDrive("Server=192.168.200.152;UserId=root;Password=xpsh;Database=huala_test");
             cb_postType.SelectedIndex = 0;
+            cb_payType.SelectedIndex = 0;
             mySqlDrive = new MySqlDrive(mySqlConnStr);
             mySqlDrive.OnGetErrorMessage += mySqlDrive_OnGetErrorMessage;
             mySqlDrive.OnDriveStateChange += mySqlDrive_OnDriveStateChange;
@@ -51,6 +52,8 @@ namespace TT_Huala_OrderPay
             public static string orderMobile = "15158155511";
             public static string seller_id = "542";
             public static string shippingType = "0";
+            public static string open_id = "10000000000000000000000000000001";
+            public static string payType = "wx"; //ali:支付宝  wx：weixin 
         }
         #endregion
 
@@ -287,8 +290,8 @@ namespace TT_Huala_OrderPay
         public bool PayOrder(string yourOrderName)
         {
             //Thread.Sleep(TaskVaules.operateDelay);
-            //http://xp.xiaxiaw.com/huala/v2/wo/paytest/
-            string tempRqs = MyCommonTool.myWebTool.myHttp.SendData("http://" + defaultUrl + "/huala/paytest/" + yourOrderName + "/1", null, "GET");
+            string tempRqs = MyCommonTool.myWebTool.myHttp.SendData("http://" + defaultUrl + "/huala/paytest/" + yourOrderName + "/" + (cb_AutoOpenId.Checked ? "AutoScanOpenId" + System.DateTime.Now.Ticks : TaskVaules.open_id) + "/1", null, "GET");
+
             if (tempRqs == "{\"success\":true}")
             {
                 PutRunInfo(string.Format("Order:[{0}] pay sucess", yourOrderName));
@@ -309,7 +312,7 @@ namespace TT_Huala_OrderPay
         /// <returns></returns>
         public bool PayScanOrder(string yourOrderName)
         {
-            string tempRqs = MyCommonTool.myWebTool.myHttp.SendData("http://" + defaultUrl + "/huala/scanpaytest/" + yourOrderName , null, "GET");
+            string tempRqs = MyCommonTool.myWebTool.myHttp.SendData("http://" + defaultUrl + "/huala/scanpaytest/" + yourOrderName + "/" + cb_payType.Text + "/" + (cb_AutoScanOpenId.Checked ? "AutoScanOpenId" + System.DateTime.Now.Ticks : TaskVaules.open_id), null, "GET");
             if (tempRqs == "{\"success\":true}")
             {
                 PutRunInfo(string.Format("Order:[{0}] pay sucess", yourOrderName));
@@ -533,7 +536,8 @@ namespace TT_Huala_OrderPay
 
         private void bt_shopLogin_Click(object sender, EventArgs e)
         {
-            string tempRqs = MyCommonTool.myWebTool.myHttp.SendData(string.Format("http://{0}/huala/seller/login/{1}/{2}", defaultUrl, tb_shopName.Text, tb_shopPwd.Text), null, "GET");
+            //string tempRqs = MyCommonTool.myWebTool.myHttp.SendData(string.Format("http://{0}/huala/seller/login/{1}/{2}", defaultUrl, tb_shopName.Text, tb_shopPwd.Text), null, "GET");
+            string tempRqs = MyCommonTool.myWebTool.myHttp.SendData(string.Format("https://wxtest.huala.com/huala/seller/login/{1}/{2}", defaultUrl, tb_shopName.Text, tb_shopPwd.Text), null, "GET");
             try
             {
                 string sellerId = XylTool.PickJsonParameter("sellerId", XylTool.PickJsonParameter("sellerList", XylTool.PickJsonParameter("body", tempRqs)));

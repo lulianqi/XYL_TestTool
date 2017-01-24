@@ -7,6 +7,8 @@ using System.IO;
 using System.Collections.Specialized;
 using System.Linq;
 using MyCommonTool;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 
 /*******************************************************************************
@@ -30,6 +32,24 @@ namespace MyCommonTool
         {
             public static int httpTimeOut = 100000;                                            //http time out , HttpPostData will not use this value
 
+            //ServicePointManager
+
+            static myHttp()
+            {
+                //ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(
+                //    (sender, certificate, chain, sslPolicyErrors) => { return true; });
+
+                ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
+
+                Console.WriteLine(ServicePointManager.DefaultConnectionLimit);               
+            }
+
+            public static bool MyRemoteCertificateValidationCallback(Object sender,X509Certificate certificate,X509Chain chain,SslPolicyErrors sslPolicyErrors)
+            {
+                return true;
+            }
+
+             
             /// <summary>
             /// i will Send Data 
             /// </summary>
@@ -39,6 +59,7 @@ namespace MyCommonTool
             /// <returns>back </returns>
             public static string SendData(string url, string data, string method)
             {
+
                 string re = "";
                 try
                 {
