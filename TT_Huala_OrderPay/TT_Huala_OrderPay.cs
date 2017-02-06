@@ -594,6 +594,11 @@ namespace TT_Huala_OrderPay
         private string severWxPath = @"/data/huala";
         private void bt_update_hualaSys_Click(object sender, EventArgs e)
         {
+            if (!File.Exists(svnLocalSysPath))
+            {
+                MessageBox.Show("宿主机上未发现SVN数据文件夹", "STOP", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                return;
+            }
             PutRunInfo("SVN 开始更新", Color.Green, true);
             if (mySvn.OnGetSnvMessage == null)
             {
@@ -630,6 +635,11 @@ namespace TT_Huala_OrderPay
 
         private void bt_update_hualaWx_Click(object sender, EventArgs e)
         {
+            if (!File.Exists(svnLocalWxPath))
+            {
+                MessageBox.Show("宿主机上未发现SVN数据文件夹", "STOP", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                return;
+            }
             PutRunInfo("SVN 开始更新", Color.Green, true);
             if (mySvn.OnGetSnvMessage == null)
             {
