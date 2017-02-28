@@ -64,6 +64,7 @@ namespace TT_Huala_OrderPay
             this.cb_AutoOpenId = new System.Windows.Forms.CheckBox();
             this.cb_payType = new System.Windows.Forms.ComboBox();
             this.cb_AutoScanOpenId = new System.Windows.Forms.CheckBox();
+            this.bt_update_hualaFwc = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // bt_test
@@ -358,11 +359,22 @@ namespace TT_Huala_OrderPay
             this.cb_AutoScanOpenId.Text = "AutoOpenId";
             this.cb_AutoScanOpenId.UseVisualStyleBackColor = true;
             // 
+            // bt_update_hualaFwc
+            // 
+            this.bt_update_hualaFwc.Location = new System.Drawing.Point(6, 336);
+            this.bt_update_hualaFwc.Name = "bt_update_hualaFwc";
+            this.bt_update_hualaFwc.Size = new System.Drawing.Size(75, 23);
+            this.bt_update_hualaFwc.TabIndex = 25;
+            this.bt_update_hualaFwc.Text = "Update Fwc";
+            this.bt_update_hualaFwc.UseVisualStyleBackColor = true;
+            this.bt_update_hualaFwc.Click += new System.EventHandler(this.bt_update_hualaFwc_Click);
+            // 
             // TT_Huala_OrderPay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(915, 510);
+            this.Controls.Add(this.bt_update_hualaFwc);
             this.Controls.Add(this.cb_AutoScanOpenId);
             this.Controls.Add(this.cb_payType);
             this.Controls.Add(this.cb_AutoOpenId);
@@ -435,6 +447,7 @@ namespace TT_Huala_OrderPay
         private System.Windows.Forms.CheckBox cb_AutoOpenId;
         private System.Windows.Forms.ComboBox cb_payType;
         private System.Windows.Forms.CheckBox cb_AutoScanOpenId;
+        private System.Windows.Forms.Button bt_update_hualaFwc;
     }
 }
 

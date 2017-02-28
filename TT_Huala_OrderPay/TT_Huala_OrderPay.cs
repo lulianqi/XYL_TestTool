@@ -574,6 +574,7 @@ namespace TT_Huala_OrderPay
         MySvn mySvn = new MySvn();
         MyWindowsCmd cmdSys = new MyWindowsCmd();
         MyWindowsCmd cmdHuala = new MyWindowsCmd();
+        MyWindowsCmd cmdFwc = new MyWindowsCmd();
 
         SshExec exec = new SshExec("192.168.200.153", "root", "B2CCentOs7!");
         SshShell shell = new SshShell("192.168.200.153", "root", "B2CCentOs7!");
@@ -592,9 +593,16 @@ namespace TT_Huala_OrderPay
         private List<string> bliudWxCmds = new List<string> { @"D:", @"cd D:/node/scan-vue/", @"npm run test" };
         private string dstWxPath = @"D:\node\scan-vue\test";
         private string severWxPath = @"/data/huala";
+
+        private string svnLocalFwcPath = @"D:\node\fwc-vue";
+        private string svnRemoteFwcPath = @"https://192.168.200.30:18080/svn/P1003/branches/html/fwc-vue";
+        private List<string> bliudFwcCmds = new List<string> { @"D:", @"cd D:/node/fwc-vue/", @"npm run test" };
+        private string dstFwcPath = @"D:\node\fwc-vue\dist";
+        private string severFwcPath = @"/data/fwc";
         private void bt_update_hualaSys_Click(object sender, EventArgs e)
         {
-            if (!File.Exists(svnLocalSysPath))
+            //if (!File.Exists(svnLocalSysPath))
+            if (!Directory.Exists(svnLocalSysPath))
             {
                 MessageBox.Show("宿主机上未发现SVN数据文件夹", "STOP", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
@@ -635,7 +643,7 @@ namespace TT_Huala_OrderPay
 
         private void bt_update_hualaWx_Click(object sender, EventArgs e)
         {
-            if (!File.Exists(svnLocalWxPath))
+            if (!Directory.Exists(svnLocalWxPath))
             {
                 MessageBox.Show("宿主机上未发现SVN数据文件夹", "STOP", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
@@ -671,7 +679,43 @@ namespace TT_Huala_OrderPay
             }
         }
 
+        private void bt_update_hualaFwc_Click(object sender, EventArgs e)
+        {
+            if (!Directory.Exists(svnLocalFwcPath))
+            {
+                MessageBox.Show("宿主机上未发现SVN数据文件夹", "STOP", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                return;
+            }
+            PutRunInfo("SVN 开始更新", Color.Green, true);
+            if (mySvn.OnGetSnvMessage == null)
+            {
+                mySvn.OnGetSnvMessage += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes, Color.Black, false); });
+            }
+            if (mySvn.OnGetSnvStateInfo == null)
+            {
+                mySvn.OnGetSnvStateInfo += new MySvn.delegateGetSnvMessageEventHandler((obj, mes) => { PutRunInfo(mes, Color.Green, false); });
+            }
+            mySvn.Updata(svnLocalFwcPath);
 
+            PutRunInfo("\r\n开始打包", Color.Green, true);
+            if (!cmdFwc.IsStart)
+            {
+                bool innerIsOk = false;
+                cmdFwc.OnGetCmdMessage += new MyWindowsCmd.delegateGetCmdMessageEventHandler((obj, str, outType) =>
+                {
+                    PutRunInfo(str, outType == MyWindowsCmd.RedirectOutputType.RedirectStandardError ? Color.DarkGray : Color.Black, false);
+                    if (innerIsOk)
+                    { if (str.Contains(svnLocalFwcPath)) { innerIsOk = false; MoveHualaFwcToServer(); } }
+                    else
+                    { if (str.Contains("Version: webpack")) { innerIsOk = true; if (str.Contains(svnLocalFwcPath)) { innerIsOk = false; MoveHualaFwcToServer(); } } }
+                });
+                cmdFwc.StartCmd();
+            }
+            foreach (string tempCmd in bliudFwcCmds)
+            {
+                cmdFwc.RunCmd(tempCmd);
+            }
+        }
 
         private void MoveHualaSysToServer()
         {
@@ -803,6 +847,81 @@ namespace TT_Huala_OrderPay
             }
         }
 
+        private void MoveHualaFwcToServer()
+        {
+            lock (thisSshLock)
+            {
+                PutRunInfo("开始备份", Color.Green, true);
+                sshCp.Connect();
+
+                shell.Connect();
+                shell.ExpectPattern = "#";
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"cd /data/fwc_bak/");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"ls");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"rm -rf *");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"cd /data/fwc/");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"ls");
+                PutRunInfo(shell.Expect());
+                shell.WriteLine(@"mv -f * /data/fwc_bak");
+                PutRunInfo(shell.Expect());
+
+                FileInfo[] distFIles = FileService.GetAllFiles(dstFwcPath);
+                if (distFIles == null)
+                {
+                    PutRunInfo("没有发现更新文件", Color.Red, true);
+                    exec.Close();
+                    sshCp.Close();
+                }
+                PutRunInfo("开始更新", Color.Green, true);
+                foreach (FileInfo tempFileInfo in distFIles)
+                {
+                    string tempNowPath = severFwcPath + tempFileInfo.DirectoryName.myTrimStr(@"D:\node\fwc-vue\dist", null).Replace(@"\", @"/") + @"/" + tempFileInfo.Name;
+                    try
+                    {
+                        sshCp.Put(tempFileInfo.DirectoryName + @"\" + tempFileInfo.Name, tempNowPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        PutRunInfo(ex.Message, Color.OrangeRed, true);
+                        //scp: /tmp/dist/123: No such file or directory
+                        if (ex.Message.Contains("No such file or directory"))
+                        {
+                            string tempPath = ex.Message;
+                            tempPath = tempPath.Remove(0, tempPath.IndexOf(@"/"));
+                            tempPath = tempPath.Remove(tempPath.LastIndexOf(@"/"));
+                            PutRunInfo("创建文件夹" + tempPath, Color.OrangeRed, true);
+                            if (MySsh.SshFileMkFullDir(sshCp, tempPath))
+                            {
+                                try
+                                {
+                                    sshCp.Put(tempFileInfo.DirectoryName + @"\" + tempFileInfo.Name, tempNowPath);
+                                }
+                                catch (Exception innerEx)
+                                {
+                                    PutRunInfo(innerEx.Message, Color.Red, true);
+                                    PutRunInfo("传输失败，跳过该文件", Color.Red, true);
+                                }
+                            }
+                            else
+                            {
+                                PutRunInfo("创建文件夹失败，跳过该文件", Color.Red, true);
+                            }
+                        }
+                    }
+                }
+                shell.WriteLine(@"ls -l");
+                PutRunInfo(shell.Expect());
+                PutRunInfo("更新完成", Color.Green, true);
+                shell.Close();
+                sshCp.Close();
+            }
+        }
+
         #endregion
 
         private void bt_test_Click(object sender, EventArgs e)
@@ -834,6 +953,48 @@ namespace TT_Huala_OrderPay
             MyAliveTask.MyHttpTask myTs = new MyAliveTask.MyHttpTask("New", "http://wxtest.huala.com:80/huala/scan_order_list", 1000);
             myTs.OnPutOutData += myTs_OnPutOutData;
             myTs.StartTask();
+        }
+
+        public DataTable GetNoPayOrders(string sellerId, string userId, int dayInterval)
+        {
+            string sqlCommand = null;
+            if (dayInterval>0)
+            {
+                sqlCommand = string.Format("select * from h_order where add_time > date_sub(curdate(), INTERVAL {0} DAY) and ", dayInterval.ToString());
+            }
+            else
+            {
+                sqlCommand = "select * from h_order where";
+            }
+            if(sellerId==null && userId==null)
+            {
+                sqlCommand += "order_status='no_pay'";
+            }
+            else if(sellerId==null)
+            {
+                sqlCommand += string.Format("order_status='no_pay' and user_id = '{0}'", userId);
+            }
+            else if(userId==null)
+            {
+                sqlCommand += string.Format("order_status='no_pay' and seller_id = '{0}'", sellerId);
+            }
+            else
+            {
+                sqlCommand += string.Format("order_status='no_pay' and seller_id = '{0}' and user_id = '{1}'", sellerId, userId);
+            }
+
+            return mySqlDrive.ExecuteQuery(sqlCommand);
+        }
+
+        public void FillNoPayList(DataTable noPayTable)
+        {
+            if(noPayTable!=null)
+            {
+                foreach(DataRow noPayRow in noPayTable.Rows)
+                {
+
+                }
+            }
         }
 
         private void bt_scanOrder_Click(object sender, EventArgs e)
@@ -929,9 +1090,6 @@ namespace TT_Huala_OrderPay
             lv_orderSnList.Width = this.Width - 211;
             lv_orderSnList.Height = this.Height - 358;
         }
-
-
-
 
        
        
