@@ -23,6 +23,7 @@ namespace TT_Huala_OrderPay
         public TT_Huala_OrderPay()
         {
             InitializeComponent();
+            Control.CheckForIllegalCrossThreadCalls = false;                                    //自行控制ui线程安全
             //mySqlDrive = new MySqlDrive("Server=192.168.200.152;UserId=root;Password=xpsh;Database=huala_test");
             cb_postType.SelectedIndex = 0;
             cb_payType.SelectedIndex = 0;
@@ -40,6 +41,7 @@ namespace TT_Huala_OrderPay
         HualaBuyerBusiness myHualaBuyerBusiness;
         string mySqlConnStr = "data source=192.168.200.152;user id=root;pwd=xpsh;initial catalog=huala_test;allow zero datetime=true ;pooling=false; charset=utf8";
         string defaultUrl = "wxtest.huala.com:80"; //"wxtest.huala.com";
+        string defaultApiUrl = "apitest.huala.com";
 
         static class TaskVaules
         {
@@ -65,20 +67,33 @@ namespace TT_Huala_OrderPay
             cb_AutoShopPost.Checked = false;
         }
 
+
+        /// <summary>
+        /// old Scan Order find by http request
+        /// </summary>
         public void CreatRefushScanOrderTast()
         {
             myTs = new MyAliveTask.MyHttpTask("RefushScanOrderTast", string.Format("http://{0}/huala/scan_order_list", defaultUrl), 2000);
             myTs.OnPutOutData += myTs_OnPutOutData;
         }
 
+
+
         public void StartRefushScanOrderTast()
         {
-            myTs.StartTask();
+            //myTs.StartTask(); //old
+            int filterDayNum = 0;
+            string mySqlCommand = GetNoPayOrdersSql((string.IsNullOrEmpty(tb_filterSellerId.Text) ? null : tb_filterSellerId.Text), (string.IsNullOrEmpty(tb_filterUserId.Text) ? null : tb_filterUserId.Text), (int.TryParse(tb_filterDayNum.Text, out filterDayNum) ? filterDayNum : 3));
+            mySqlDrive.UpdateAliveTaskSqlCmd("FindNoPayOrder", mySqlCommand);
+            mySqlDrive.StartAliveTask("FindNoPayOrder");
+            PutRunInfo("FindNoPayOrder Start");
         }
 
         public void StopRefushScanOrderTast()
         {
-            myTs.StopTask();
+            //myTs.StopTask();//old
+            mySqlDrive.StopAliveTask("FindNoPayOrder");
+            PutRunInfo("FindNoPayOrder Stop");
         }
 
         public void CreatPayOrderTask()
@@ -86,6 +101,15 @@ namespace TT_Huala_OrderPay
             //DataTable tempTable = mySqlDrive.ExecuteQuery("select * from h_order  where consignee ='李杰1' and order_status='no_pay' order by add_time desc");
             mySqlDrive.CreateNewAliveTask("GetNoPayOrder", string.Format("select * from h_order  where mobile ='{0}' and order_status='no_pay' order by add_time desc", TaskVaules.orderMobile), TaskVaules.checkTime, GetNoPayOrder_OnNewMes);
             //mySqlDrive.StartAliveTask("GetNoPayOrder");
+        }
+
+        public void CreatFindNoPayOrderTask()
+        {
+            int filterDayNum = 0;
+            string mySqlCommand = GetNoPayOrdersSql((string.IsNullOrEmpty(tb_filterSellerId.Text) ? null : tb_filterSellerId.Text), (string.IsNullOrEmpty(tb_filterUserId.Text) ? null : tb_filterUserId.Text), (int.TryParse(tb_filterDayNum.Text, out filterDayNum) ? filterDayNum : 3));
+
+            mySqlDrive.CreateNewAliveTask("FindNoPayOrder", mySqlCommand, TaskVaules.checkTime, FindNoPayOrder_OnNewMes);
+            //mySqlDrive.StartAliveTask("FindNoPayOrder");
         }
 
         public void CreatShopPostTask()
@@ -326,6 +350,22 @@ namespace TT_Huala_OrderPay
             }
         }
 
+        public bool NewPayScanOrder(string orderSn,string payAmount,string payType)
+        {
+            string tempRqs = MyCommonTool.myWebTool.myHttp.SendData("http://" + defaultApiUrl + "/scan/paytest/" + orderSn + "/" + payAmount + "/" + payType, null, "GET");
+            if (tempRqs .Contains( "\"success\":true"))
+            {
+                PutRunInfo(string.Format("Order:[{0}] pay sucess", orderSn));
+                return true;
+            }
+            else
+            {
+                PutRunInfo(string.Format("Order:[{0}] pay fail", orderSn));
+                PutRunInfo(tempRqs);
+                return false;
+            }
+        }
+
         /// <summary>
         /// Post Order
         /// </summary>
@@ -492,6 +532,7 @@ namespace TT_Huala_OrderPay
             Thread.Sleep(100);
             CreatShopPostTask();
             CreatRefushScanOrderTast();
+            CreatFindNoPayOrderTask();
 
             sshCp.OnTransferStart += new FileTransferEvent((src, dst, transferredBytes, totalBytes, message) => { PutRunInfo(string.Format("Put file {0} to {1}   state：{2}",src,dst,message)); });
             sshCp.OnTransferEnd += new FileTransferEvent((src, dst, transferredBytes, totalBytes, message) => { PutRunInfo(string.Format("Put file {0} to {1}   state：{2}", src, dst, message)); });
@@ -955,10 +996,10 @@ namespace TT_Huala_OrderPay
             myTs.StartTask();
         }
 
-        public DataTable GetNoPayOrders(string sellerId, string userId, int dayInterval)
+        public string GetNoPayOrdersSql(string sellerId, string userId, int dayInterval)
         {
             string sqlCommand = null;
-            if (dayInterval>0)
+            if (dayInterval > 0)
             {
                 sqlCommand = string.Format("select * from h_order where add_time > date_sub(curdate(), INTERVAL {0} DAY) and ", dayInterval.ToString());
             }
@@ -966,15 +1007,15 @@ namespace TT_Huala_OrderPay
             {
                 sqlCommand = "select * from h_order where";
             }
-            if(sellerId==null && userId==null)
+            if (sellerId == null && userId == null)
             {
                 sqlCommand += "order_status='no_pay'";
             }
-            else if(sellerId==null)
+            else if (sellerId == null)
             {
                 sqlCommand += string.Format("order_status='no_pay' and user_id = '{0}'", userId);
             }
-            else if(userId==null)
+            else if (userId == null)
             {
                 sqlCommand += string.Format("order_status='no_pay' and seller_id = '{0}'", sellerId);
             }
@@ -983,22 +1024,52 @@ namespace TT_Huala_OrderPay
                 sqlCommand += string.Format("order_status='no_pay' and seller_id = '{0}' and user_id = '{1}'", sellerId, userId);
             }
 
-            return mySqlDrive.ExecuteQuery(sqlCommand);
+            return sqlCommand;
+        }
+
+        public DataTable GetNoPayOrders(string sellerId, string userId, int dayInterval)
+        {
+            return mySqlDrive.ExecuteQuery(GetNoPayOrdersSql(sellerId, userId, dayInterval));
         }
 
         public void FillNoPayList(DataTable noPayTable)
         {
             if(noPayTable!=null)
             {
+                List<string[]> tempNoPayList = new List<string[]>();
                 foreach(DataRow noPayRow in noPayTable.Rows)
                 {
-
+                    tempNoPayList.Add(new string[] { noPayRow["seller_id"].ToString(), noPayRow["user_id"].ToString(), noPayRow["mobile"].ToString(), noPayRow["good_amount"].ToString(), noPayRow["order_amount"].ToString(), noPayRow["order_sn"].ToString(), noPayRow["order_type"].ToString(), noPayRow["add_time"].ToString(),"" });
+                }
+                RefreshScanOederSn(tempNoPayList);
+                if(ck_antoSacnPay.Checked)
+                {
+                    foreach(var noPayOrder in tempNoPayList)
+                    {
+                        switch (noPayOrder[6])
+                        {
+                            case "5":
+                                NewPayScanOrder(noPayOrder[5], noPayOrder[4], cb_payType.Text);
+                                break;
+                            default:
+                                PayOrder(noPayOrder[5]);
+                                break;
+                        }
+                    }
                 }
             }
         }
 
+        private void FindNoPayOrder_OnNewMes(object sender, DataTable dataTable)
+        {
+            FillNoPayList(dataTable);
+        }
+
         private void bt_scanOrder_Click(object sender, EventArgs e)
         {
+            int filterDayNum = 0;
+            FillNoPayList(GetNoPayOrders((string.IsNullOrEmpty(tb_filterSellerId.Text) ? null : tb_filterSellerId.Text), (string.IsNullOrEmpty(tb_filterUserId.Text) ? null : tb_filterUserId.Text), (int.TryParse(tb_filterDayNum.Text, out filterDayNum) ? filterDayNum : 3)));
+            return;
             string tempRqs = MyCommonTool.myWebTool.myHttp.SendData(string.Format("http://{0}/huala/scan_order_list", defaultUrl), null, "GET");
             myTs_OnPutOutData(null, tempRqs);
         }
@@ -1014,7 +1085,7 @@ namespace TT_Huala_OrderPay
                 {
                     foreach(var tempScanPayOrder in mySnList)
                     {
-                        if (tempScanPayOrder[1] == tb_scanUserId.Text || tb_scanUserId.Text=="")
+                        if (tempScanPayOrder[1] == tb_filterUserId.Text || tb_filterUserId.Text=="")
                         {
                             PayScanOrder(tempScanPayOrder[5]);
                         }
@@ -1060,6 +1131,35 @@ namespace TT_Huala_OrderPay
 
         private void lv_orderSnList_ButtonClickEvent(object sender, EventArgs e)
         {
+            if (sender is ListViewItem)
+            {
+                switch (((ListViewItem)sender).SubItems[6].Text)
+                {
+                    case "5":
+                        if (NewPayScanOrder(((ListViewItem)sender).SubItems[5].Text, ((ListViewItem)sender).SubItems[4].Text, cb_payType.Text))
+                        {
+                            MessageBox.Show("完成支付");
+                            lv_orderSnList.DelItemEx((ListViewItem)sender);
+                        }
+                        else
+                        {
+                            MessageBox.Show("支付失败");
+                        }
+                        break;
+                    default:
+                        if( PayOrder(((ListViewItem)sender).SubItems[5].Text))
+                        {
+                            MessageBox.Show("完成支付");
+                            lv_orderSnList.DelItemEx((ListViewItem)sender);
+                        }
+                        else
+                        {
+                            MessageBox.Show("支付失败");
+                        }
+                        break;
+                }
+            }
+            /** 老的支付接口
             if(sender is ListViewItem)
             {
                 if(PayScanOrder(((ListViewItem)sender).SubItems[5].Text))
@@ -1071,6 +1171,7 @@ namespace TT_Huala_OrderPay
                     MessageBox.Show("支付失败");
                 }
             }
+            */
         }
         private void ck_antoRefush_CheckedChanged(object sender, EventArgs e)
         {

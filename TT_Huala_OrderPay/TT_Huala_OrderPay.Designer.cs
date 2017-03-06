@@ -1,4 +1,5 @@
 ﻿using MyCommonControl;
+using MyCommonControl.Control;
 namespace TT_Huala_OrderPay
 {
     partial class TT_Huala_OrderPay
@@ -47,7 +48,7 @@ namespace TT_Huala_OrderPay
             this.ck_antoRefush = new System.Windows.Forms.CheckBox();
             this.bt_scanOrder = new System.Windows.Forms.Button();
             this.ck_antoSacnPay = new System.Windows.Forms.CheckBox();
-            this.tb_scanUserId = new System.Windows.Forms.TextBox();
+            this.tb_filterUserId = new MyCommonControl.Control.TextBoxWithWatermak();
             this.bt_update_hualaSys = new System.Windows.Forms.Button();
             this.lv_orderSnList = new MyCommonControl.ListViewWithButton();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -65,6 +66,8 @@ namespace TT_Huala_OrderPay
             this.cb_payType = new System.Windows.Forms.ComboBox();
             this.cb_AutoScanOpenId = new System.Windows.Forms.CheckBox();
             this.bt_update_hualaFwc = new System.Windows.Forms.Button();
+            this.tb_filterSellerId = new MyCommonControl.Control.TextBoxWithWatermak();
+            this.tb_filterDayNum = new MyCommonControl.Control.TextBoxWithWatermak();
             this.SuspendLayout();
             // 
             // bt_test
@@ -195,7 +198,7 @@ namespace TT_Huala_OrderPay
             // ck_antoRefush
             // 
             this.ck_antoRefush.AutoSize = true;
-            this.ck_antoRefush.Location = new System.Drawing.Point(273, 298);
+            this.ck_antoRefush.Location = new System.Drawing.Point(446, 298);
             this.ck_antoRefush.Name = "ck_antoRefush";
             this.ck_antoRefush.Size = new System.Drawing.Size(72, 16);
             this.ck_antoRefush.TabIndex = 16;
@@ -216,20 +219,20 @@ namespace TT_Huala_OrderPay
             // ck_antoSacnPay
             // 
             this.ck_antoSacnPay.AutoSize = true;
-            this.ck_antoSacnPay.Location = new System.Drawing.Point(444, 298);
+            this.ck_antoSacnPay.Location = new System.Drawing.Point(524, 298);
             this.ck_antoSacnPay.Name = "ck_antoSacnPay";
             this.ck_antoSacnPay.Size = new System.Drawing.Size(72, 16);
             this.ck_antoSacnPay.TabIndex = 18;
             this.ck_antoSacnPay.Text = "自动支付";
             this.ck_antoSacnPay.UseVisualStyleBackColor = true;
             // 
-            // tb_scanUserId
+            // tb_filterUserId
             // 
-            this.tb_scanUserId.Location = new System.Drawing.Point(382, 295);
-            this.tb_scanUserId.Name = "tb_scanUserId";
-            this.tb_scanUserId.Size = new System.Drawing.Size(53, 21);
-            this.tb_scanUserId.TabIndex = 19;
-            this.tb_scanUserId.Text = "0";
+            this.tb_filterUserId.Location = new System.Drawing.Point(330, 296);
+            this.tb_filterUserId.Name = "tb_filterUserId";
+            this.tb_filterUserId.Size = new System.Drawing.Size(53, 21);
+            this.tb_filterUserId.TabIndex = 19;
+            this.tb_filterUserId.WatermarkText = "用户ID";
             // 
             // bt_update_hualaSys
             // 
@@ -276,7 +279,7 @@ namespace TT_Huala_OrderPay
             // columnHeader3
             // 
             this.columnHeader3.Text = "电话";
-            this.columnHeader3.Width = 94;
+            this.columnHeader3.Width = 80;
             // 
             // columnHeader4
             // 
@@ -290,22 +293,22 @@ namespace TT_Huala_OrderPay
             // columnHeader6
             // 
             this.columnHeader6.Text = "订单SN";
-            this.columnHeader6.Width = 117;
+            this.columnHeader6.Width = 149;
             // 
             // columnHeader7
             // 
-            this.columnHeader7.Text = "支付方式";
+            this.columnHeader7.Text = "订单类型";
             this.columnHeader7.Width = 61;
             // 
             // columnHeader8
             // 
             this.columnHeader8.Text = "时间";
-            this.columnHeader8.Width = 148;
+            this.columnHeader8.Width = 136;
             // 
             // columnHeader9
             // 
             this.columnHeader9.Text = "操作";
-            this.columnHeader9.Width = 58;
+            this.columnHeader9.Width = 65;
             // 
             // dataRecordBox_MesInfo
             // 
@@ -339,12 +342,11 @@ namespace TT_Huala_OrderPay
             // 
             // cb_payType
             // 
-            this.cb_payType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cb_payType.FormattingEnabled = true;
             this.cb_payType.Items.AddRange(new object[] {
             "wx",
             "ali"});
-            this.cb_payType.Location = new System.Drawing.Point(522, 294);
+            this.cb_payType.Location = new System.Drawing.Point(602, 294);
             this.cb_payType.Name = "cb_payType";
             this.cb_payType.Size = new System.Drawing.Size(112, 20);
             this.cb_payType.TabIndex = 23;
@@ -352,7 +354,7 @@ namespace TT_Huala_OrderPay
             // cb_AutoScanOpenId
             // 
             this.cb_AutoScanOpenId.AutoSize = true;
-            this.cb_AutoScanOpenId.Location = new System.Drawing.Point(640, 296);
+            this.cb_AutoScanOpenId.Location = new System.Drawing.Point(720, 296);
             this.cb_AutoScanOpenId.Name = "cb_AutoScanOpenId";
             this.cb_AutoScanOpenId.Size = new System.Drawing.Size(84, 16);
             this.cb_AutoScanOpenId.TabIndex = 24;
@@ -369,18 +371,37 @@ namespace TT_Huala_OrderPay
             this.bt_update_hualaFwc.UseVisualStyleBackColor = true;
             this.bt_update_hualaFwc.Click += new System.EventHandler(this.bt_update_hualaFwc_Click);
             // 
+            // tb_filterSellerId
+            // 
+            this.tb_filterSellerId.Location = new System.Drawing.Point(274, 296);
+            this.tb_filterSellerId.Name = "tb_filterSellerId";
+            this.tb_filterSellerId.Size = new System.Drawing.Size(53, 21);
+            this.tb_filterSellerId.TabIndex = 26;
+            this.tb_filterSellerId.WatermarkText = "店铺ID";
+            // 
+            // tb_filterDayNum
+            // 
+            this.tb_filterDayNum.Location = new System.Drawing.Point(387, 296);
+            this.tb_filterDayNum.Name = "tb_filterDayNum";
+            this.tb_filterDayNum.Size = new System.Drawing.Size(53, 21);
+            this.tb_filterDayNum.TabIndex = 27;
+            this.tb_filterDayNum.Text = "3";
+            this.tb_filterDayNum.WatermarkText = "查询天数";
+            // 
             // TT_Huala_OrderPay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(915, 510);
+            this.Controls.Add(this.tb_filterDayNum);
+            this.Controls.Add(this.tb_filterSellerId);
             this.Controls.Add(this.bt_update_hualaFwc);
             this.Controls.Add(this.cb_AutoScanOpenId);
             this.Controls.Add(this.cb_payType);
             this.Controls.Add(this.cb_AutoOpenId);
             this.Controls.Add(this.bt_update_hualaWx);
             this.Controls.Add(this.bt_update_hualaSys);
-            this.Controls.Add(this.tb_scanUserId);
+            this.Controls.Add(this.tb_filterUserId);
             this.Controls.Add(this.ck_antoSacnPay);
             this.Controls.Add(this.bt_scanOrder);
             this.Controls.Add(this.ck_antoRefush);
@@ -441,13 +462,15 @@ namespace TT_Huala_OrderPay
         private System.Windows.Forms.CheckBox ck_antoRefush;
         private System.Windows.Forms.Button bt_scanOrder;
         private System.Windows.Forms.CheckBox ck_antoSacnPay;
-        private System.Windows.Forms.TextBox tb_scanUserId;
+        private TextBoxWithWatermak tb_filterUserId;
         private System.Windows.Forms.Button bt_update_hualaSys;
         private System.Windows.Forms.Button bt_update_hualaWx;
         private System.Windows.Forms.CheckBox cb_AutoOpenId;
         private System.Windows.Forms.ComboBox cb_payType;
         private System.Windows.Forms.CheckBox cb_AutoScanOpenId;
         private System.Windows.Forms.Button bt_update_hualaFwc;
+        private TextBoxWithWatermak tb_filterSellerId;
+        private TextBoxWithWatermak tb_filterDayNum;
     }
 }
 
